@@ -1,0 +1,33 @@
+Metadata-Version: 2.1
+Name: ocr-sabhi
+Version: 0.0.4
+Summary: A simple document detector in python.
+Home-page: https://github.com/sabhi-org/ocr-sabhi
+Author: Hamza
+Author-email: info@sabhi.org
+License: UNKNOWN
+Description: # Python Document Detector
+        A simple document detector in python. 
+        
+        # Test run
+        ## Document Extractor
+        ```
+        from ocr.page_extractor import PageExtractor
+        
+        extractor = PageExtractor()
+        doc = extractor(PATH_TO_FILE)
+        ```
+        ## OCR CNIC
+        ```
+        from ocr.ocr_document import OCRProcessor
+        
+        processor = OCRProcessor()
+        ocr_json = processor(PATH_TO_FILE)
+        ```
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

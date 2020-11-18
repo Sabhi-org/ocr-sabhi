@@ -1,13 +1,18 @@
 # Python Document Detector
 A simple document detector in python. 
 
-# Environment setup
-Run the following command to install the necessary packages.
-```
-pip install -r requirements.txt
-```
-
 # Test run
+## Document Extractor
 ```
-python3 page_extractor.py -i 'input/receipt.jpg'
+from ocr.page_extractor import PageExtractor
+
+extractor = PageExtractor()
+doc = extractor(PATH_TO_FILE)
+```
+## OCR CNIC
+```
+from ocr.ocr_document import OCRProcessor
+
+processor = OCRProcessor()
+ocr_json = processor(PATH_TO_FILE)
 ```
