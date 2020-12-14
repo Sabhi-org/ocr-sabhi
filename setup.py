@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ocr-sabhi",
-    version="0.0.4",
+    version="0.0.6",
     author="Hamza",
     author_email="info@sabhi.org",
     description="A simple document detector in python.",

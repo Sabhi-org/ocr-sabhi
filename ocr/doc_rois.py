@@ -1,7 +1,6 @@
 from collections import namedtuple
 import cv2
 
-
 class DocROI:
     def __init__(self,
                  templates=None,
@@ -57,7 +56,8 @@ class DocROI:
                 "id",
                 "bbox",
                 "filter_keywords",
-                "language"
+                "language",
+                "config"
             ]
         )
 
@@ -77,7 +77,8 @@ class DocROI:
                     "fields_bounding_box",
                     bbox[0],
                     ["name", "identity"],
-                    ["en", "ur"]
+                    ["en", "ur"],
+                    None
                 ),
             ]
             return LOCATIONS
@@ -106,76 +107,88 @@ class DocROI:
 
             LOCATIONS = [
                 OCRLocation(
-                    "issuing_country",
+                    "issuingCountry",
                     bbox[0],
                     ["islamic", "republic", "of"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "document_type",
+                    "documentType",
                     bbox[1],
                     ["card"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "name: english",
+                    "nameEnglish",
                     bbox[2],
                     ["name"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "name: urdu",
+                    "nameUrdu",
                     bbox[3],
                     [],
-                    ["ur"]
+                    ["ur"],
+                    None
                 ),
                 OCRLocation(
-                    "father_name: english",
+                    "fatherNameEnglish",
                     bbox[4],
                     ["father", "name"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "father_name: urdu",
+                    "fatherNameUrdu",
                     bbox[5],
                     ["date"],
-                    ["ur"]
+                    ["ur"],
+                    None
                 ),
                 OCRLocation(
                     "gender",
                     bbox[6],
                     ["gender"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "country_of_stay",
+                    "countryOfStay",
                     bbox[7],
                     ["country", "of", "stay"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "identity_number",
+                    "identityNumber",
                     bbox[8],
                     ["identity", "number"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_birth",
+                    "dateOfBirth",
                     bbox[9],
-                    ["identity", "number"],
-                    ["en"]
+                    ["date", "of", "birth"],
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_issue",
+                    "dateOfIssue",
                     bbox[10],
                     ["date", "of", "issue"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_expiry",
+                    "dateOfExpiry",
                     bbox[11],
                     ["date", "of", "expiry"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
             ]
             return LOCATIONS
@@ -204,76 +217,87 @@ class DocROI:
 
             LOCATIONS = [
                 OCRLocation(
-                    "issuing_country",
+                    "issuingCountry",
                     bbox[0],
                     ["islamic", "republic", "of"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "document_type",
+                    "documentType",
                     bbox[1],
                     ["Card"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "name: english",
+                    "nameEnglish",
                     bbox[2],
                     ["Name"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "name: urdu",
+                    "nameUrdu",
                     bbox[3],
                     [],
-                    ["ur"]
+                    ["ur"],
+                    None
                 ),
                 OCRLocation(
-                    "father_name: english",
+                    "fatherNameEnglish",
                     bbox[4],
                     ["father", "name"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "father_name: urdu",
+                    "fatherNameUrdu",
                     bbox[5],
                     ["date"],
-                    ["ur"]
+                    ["ur"],
+                    None
                 ),
                 OCRLocation(
                     "gender",
                     bbox[6],
                     ["gender"],
-                    ["en"]
+                    ["en"],
+                    "--psm 1 --oem 3"
                 ),
                 OCRLocation(
-                    "country_of_stay",
+                    "countryOfStay",
                     bbox[7],
                     ["country", "of", "stay"],
                     ["en"]
                 ),
                 OCRLocation(
-                    "identity_number",
+                    "identityNumber",
                     bbox[8],
                     ["identity", "number"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_birth",
+                    "dateOfBirth",
                     bbox[9],
                     ["date", "of", "birth"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_issue",
+                    "dateOfIssue",
                     bbox[10],
                     ["date", "of", "issue"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
                 OCRLocation(
-                    "date_of_expiry",
+                    "dateOfExpiry",
                     bbox[11],
                     ["date", "of", "expiry"],
-                    ["en"]
+                    ["en"],
+                    None
                 ),
             ]
 

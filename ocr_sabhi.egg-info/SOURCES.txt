@@ -7,6 +7,7 @@ ocr/hough_line_corner_detector.py
 ocr/ocr_document.py
 ocr/page_extractor.py
 ocr/processors.py
+ocr/text_processing.py
 ocr_sabhi.egg-info/PKG-INFO
 ocr_sabhi.egg-info/SOURCES.txt
 ocr_sabhi.egg-info/dependency_links.txt

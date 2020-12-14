@@ -1,3 +1,6 @@
+from ocr.processors import FastDenoiser
+
+
 class DocumentIdentifier:
     def __init__(self):
         self._init = None
@@ -12,6 +15,8 @@ class DocumentIdentifier:
         self._doc_image = doc_image
         self._doc_type = "CNIC"
         self._doc_orientation = 0
+
+        #self._doc_orientation = self._get_doc_orientation()
 
         return (
             self._doc_type,

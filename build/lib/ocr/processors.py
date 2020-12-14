@@ -2,6 +2,8 @@ import cv2
 import math
 from scipy import ndimage
 import numpy as np
+import pytesseract
+import re
 
 
 class RotationCorrector:
@@ -22,7 +24,9 @@ class RotationCorrector:
             x1, y1, x2, y2 = line[0]
             return math.degrees(math.atan2(y2 - y1, x2 - x1))
 
-        median_angle = np.median(np.array([get_angle(line) for line in lines]))
+        median_angle = np.median(
+            np.array([get_angle(line) for line in lines])
+        )
         img_rotated = ndimage.rotate(
             img_before, median_angle, cval=255, reshape=False)
 
@@ -53,8 +57,8 @@ class Resizer:
         self.output_process = output_process
 
     def __call__(self, image):
-#        if image.shape[0] <= self._height:
-#            return image
+        #        if image.shape[0] <= self._height:
+        #            return image
         ratio = round(self._height / image.shape[0], 3)
         width = int(image.shape[1] * ratio)
         dim = (width, self._height)
@@ -89,6 +93,40 @@ class OtsuThresholder:
             self.thresh2,
             cv2.THRESH_BINARY + cv2.THRESH_OTSU
         )
+        if self.output_process:
+            cv2.imwrite("output/thresholded.jpg", thresholded)
+        return thresholded
+
+
+class AdaptiveThresholder:
+    """Thresholds image by using the Gaussian  method
+
+    Params
+    ------
+    image   is the image to be Thresholded
+
+    Returns
+    -------
+    Thresholded image
+    """
+
+    def __init__(self, thresh1=255, block_size=11, constant=2, output_process=False):
+        self.output_process = output_process
+        self.thresh1 = thresh1
+        self.block_size = block_size
+        self.constant = constant
+
+    def __call__(self, image):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        thresholded = cv2.adaptiveThreshold(
+            image,
+            self.thresh1,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,
+            self.block_size,
+            self.constant
+        )
+
         if self.output_process:
             cv2.imwrite("output/thresholded.jpg", thresholded)
         return thresholded
@@ -216,3 +254,77 @@ class SharpenAndDilate:
                 result.append(image_result)
         image = cv2.merge(result)
         return image
+
+
+class RotationDetector:
+    def __init__(self):
+        self._init = None
+
+    def __call__(
+        self,
+        image,
+        debug=False
+    ):
+
+        self._image = image
+        # Save image to avoid leptonica error
+        temp_file_name = "rotation_detector_image.png"
+        cv2.imwrite(temp_file_name, self._image)
+        self._image = cv2.imread(temp_file_name)
+        # Step 1: Get Document HoughLines
+
+        self._angle_hough = self._get_angle_hough()
+
+        self._angle_tesseract = self._get_angle_tesseract()
+        print(self._angle_tesseract)
+        self._angle = np.round(
+            np.degrees(self._angle_hough)
+        )
+
+        return self._angle - 90.0
+
+    def _get_angle_tesseract(
+        self,
+        config="--psm 12 --oem 3",
+    ):
+        image_osd = pytesseract.image_to_osd(self._image, config=config)
+        rotation_angle = re.search('(?<=Rotate: )\d+', image_osd).group(0)
+        return rotation_angle
+
+    def _get_angle_hough(self):
+        self._hough_lines = self._get_hough_lines()
+        return np.median(
+            np.array([self._get_line(line) for line in self._hough_lines])
+        )
+
+    def _get_line(self, line):
+        _, theta = line[0]
+
+        return theta
+
+    def _get_hough_lines(
+        self,
+        rho_acc=1,
+        theta_acc=90,
+        thresh=100,
+        preprocessor=[
+            Closer(),
+            EdgeDetector(),
+        ]
+    ):
+        """
+        Extract straight lines from image using Hough Transform.
+
+        Returns
+        ----------
+        array containing rho and theta of lines (Hess Norm formulation)
+        """
+
+        for processor in preprocessor:
+            image = processor(self._image.copy())
+
+        lines = cv2.HoughLines(
+            image, rho_acc, np.pi / theta_acc, thresh
+        )
+
+        return lines

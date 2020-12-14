@@ -1,10 +1,12 @@
 from ocr.page_extractor import PageExtractor
 from ocr.doc_identifier import DocumentIdentifier
 from ocr.doc_rois import DocROI
-from ocr.processors import SharpenAndDilate
+from ocr.processors import AdaptiveThresholder, SharpenAndDilate
+from ocr.text_processing import RectifyText
 import cv2
 import pytesseract
 import json
+import os
 
 
 class OCRProcessor:
@@ -44,10 +46,13 @@ class OCRProcessor:
         roi_extractor=DocROI(debug=False),
         output_process=False,
         preprocessors=[
-            SharpenAndDilate(kernel=(3, 3),
-                             normalized=True,
-                             output_process=True)
+            #SharpenAndDilate(kernel=(3,3),
+            #               normalized=True,
+            #               output_process=False)
+            # AdaptiveThresholder(thresh1=255, block_size=9,
+            #                    constant=3, output_process=False)
         ],
+        text_rectification=RectifyText()
     ):
 
         self._preprocessors = preprocessors
@@ -55,8 +60,9 @@ class OCRProcessor:
         self._document_identifier = document_identifier
         self._roi_extractor = roi_extractor
         self.output_process = output_process
+        self._text_rectification = text_rectification
 
-    def __call__(self, image_path, debug=False):
+    def __call__(self, image_path, debug=True):
         # Step 1: extract document area from image
         self._image_path = image_path
         self._doc_image = self._page_extractor(self._image_path)
@@ -80,10 +86,16 @@ class OCRProcessor:
         # Step 4: Extract text and location from ROIs for document type
         self._field_text_location_dict = self._get_document_ocr_dictionary()
 
-        # Step 5: Get text for required fields as key value pairs
-        results = json.dumps(self._doc_key_value_pairs(), indent=4)
+        # Step 5: Text rectification, and clean up
+        # TODO: Implement text rectification, and clean up
+        result_dictionary = self._text_rectification(
+            field_text_location_dict=self._doc_key_value_pairs(),
+            document_type="CNIC", debug=False)
+
+        # Step 6: Get text for required fields as key value pairs
+        results = json.dumps(result_dictionary, indent=4)
+
         return results
-        # return self._doc_key_value_pairs()
 
     def _get_rois(self):
 
@@ -92,7 +104,7 @@ class OCRProcessor:
             self._doc_type,
             doc_orientation=self._doc_orientation,
             meta=False,
-        )  # *meta* Testing large and small ROI
+        )  # TODO: Testing large and small ROI
 
         return doc_rois
 
@@ -102,7 +114,7 @@ class OCRProcessor:
 
         for location in self._doc_rois:
             # extract the OCR ROI from the aligned image
-            text = self._text_at_location(location, debug=False)
+            text = self._text_at_location(location, debug=True)
 
             parsed_text = self._parse_cleanup_text(text, location)
             parsing_results.append(parsed_text)
@@ -136,6 +148,8 @@ class OCRProcessor:
     def _parse_cleanup_text(self, text, location):
         for line in text.split("\n"):
             # if the line is empty ignore it
+            # line = self._cleanup_text(line)
+            # print(line)
             if len(line) == 0:
                 continue
 
@@ -150,13 +164,21 @@ class OCRProcessor:
             if count == 0:
                 # update our parsing results dictionary with the OCR'd
                 # text if the line is *not* empty
-                return (location, line)
+                lower = self._cleanup_text(lower)
+                return (location, lower)
+
+    def _cleanup_text(self, text):
+        # strip out non-ASCII text so we can draw the text on the image
+        # using OpenCV
+        return "".join(
+            [c if ord(c) < 128 else "" for c in text]).strip()
 
     def _text_at_location(
         self,
         loc,
         model="tesseract",
         gpu=-1,
+        config="--psm 12 --oem 3",
         debug=False
     ):
         image = self._doc_image
@@ -171,14 +193,34 @@ class OCRProcessor:
         if debug:
             cv2.imshow("roi", roi)
             cv2.waitKey(0)
+            print(loc)
 
         try:
             if model == "tesseract":
+                # for key, value in config.items():
+                #    expr = f"--{key} {value} "
+                #    config_tesseract = config_tesseract+expr
+
+                if loc.config:
+                    config = loc.config
+
+                if debug:
+                    config = config + " -c tessedit_write_images=True"
+
                 tesseract_image = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
-                text = pytesseract.image_to_string(tesseract_image)
+                text = pytesseract.image_to_string(
+                    tesseract_image,
+                    config=config
+                )
+
+                if debug:
+                    os.system(
+                        f'mv tessinput.tif output/tessinput_{loc.id=}.tif')
+
+                print(text)
                 return text
         except NameError:
-            print("Incorrect Model Selected")
+            raise Exception("Incorrect Model Selected")
 
     def _doc_key_value_pairs(self):
         results = {}

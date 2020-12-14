@@ -58,6 +58,7 @@ class HoughLineCornerDetector:
 
         return lines
 
+
     def _draw_hough_lines(self, lines):
         hough_line_output = self._get_color_image()
         n = self._n

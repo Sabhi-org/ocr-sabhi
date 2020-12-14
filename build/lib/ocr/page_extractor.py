@@ -9,7 +9,7 @@ class PageExtractor:
     def __init__(
         self,
         preprocessors=[
-            Resizer(height=600, output_process=True),
+            Resizer(height=750, output_process=True),
             FastDenoiser(strength=9, output_process=True),
         ],
         corner_detector=HoughLineCornerDetector(
